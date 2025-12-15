@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>学生信息管理系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>学生信息管理系统</h1>
+        <p class="muted">基于 Vercel Serverless + Neon（PostgreSQL）</p>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <h2>学生登录</h2>
+          <p>使用学号与密码登录，查看本人信息。</p>
+          <div class="row">
+            <a href="./student-login.html"><button>学生登录</button></a>
+            <a href="./student-register.html"><button class="secondary">学生注册</button></a>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>管理员登录</h2>
+          <p>使用管理员账号密码登录，进行学生信息增删改查。</p>
+          <a href="./admin.html"><button>管理员登录</button></a>
+          <p class="muted" style="margin-top:8px">默认管理员：用户名 <code>admin</code>，密码 <code>admin</code></p>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:16px">
+        <h2>初始化数据库</h2>
+        <p class="muted">首次部署后需初始化：创建表结构并预置默认管理员。</p>
+        <div class="row">
+          <button id="btn-setup">执行初始化</button>
+          <span id="setup-msg" class="muted"></span>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const btn = document.getElementById('btn-setup');
+      const msg = document.getElementById('setup-msg');
+      btn?.addEventListener('click', async () => {
+        msg.textContent = '正在初始化，请稍候...';
+        try {
+          const res = await fetch('/api/setup');
+          const data = await res.json();
+          if (res.ok) {
+            msg.textContent = `初始化完成：${data.message || 'OK'}`;
+            msg.className = 'success';
+          } else {
+            msg.textContent = data.error || '初始化失败';
+            msg.className = 'error';
+          }
+        } catch (e) {
+          msg.textContent = '网络错误或函数未部署';
+          msg.className = 'error';
+        }
+      });
+    </script>
+  </body>
+</html>

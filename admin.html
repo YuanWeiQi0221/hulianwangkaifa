@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>管理员登录与学生管理</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>管理员面板</h1>
+        <a href="./index.html"><button class="secondary">返回首页</button></a>
+      </header>
+
+      <section id="login-card" class="card">
+        <h2>管理员登录</h2>
+        <label>用户名</label>
+        <input id="admin-username" placeholder="请输入用户名" />
+        <label>密码</label>
+        <input id="admin-password" type="password" placeholder="请输入密码" />
+        <div class="row" style="margin-top:8px">
+          <button id="btn-admin-login">登录</button>
+          <span id="admin-login-msg" class="muted"></span>
+        </div>
+        <p class="muted" style="margin-top:8px">默认账号：admin / admin</p>
+      </section>
+
+      <section id="app-card" class="card hidden">
+        <h2>学生信息管理</h2>
+        <div class="row">
+          <input id="search-q" placeholder="按学号/姓名搜索" />
+          <button id="btn-search" class="secondary">查询</button>
+          <button id="btn-refresh" class="secondary">刷新</button>
+        </div>
+        <div style="margin-top:12px; overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>年龄</th>
+                <th>班级</th>
+                <th>专业</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody"></tbody>
+          </table>
+        </div>
+
+        <h3 style="margin-top:16px">新增/编辑学生</h3>
+        <div class="grid">
+          <div>
+            <label>学号</label>
+            <input id="f-student_id" />
+          </div>
+          <div>
+            <label>姓名</label>
+            <input id="f-name" />
+          </div>
+          <div>
+            <label>性别</label>
+            <select id="f-gender">
+              <option value="">未选择</option>
+              <option>男</option>
+              <option>女</option>
+            </select>
+          </div>
+          <div>
+            <label>年龄</label>
+            <input id="f-age" type="number" />
+          </div>
+          <div>
+            <label>班级</label>
+            <input id="f-class" />
+          </div>
+          <div>
+            <label>专业</label>
+            <input id="f-major" />
+          </div>
+          <div>
+            <label>密码（新增或重置）</label>
+            <input id="f-password" type="password" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="btn-create">新增</button>
+          <button id="btn-update" class="secondary">更新</button>
+          <span id="crud-msg" class="muted"></span>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const loginCard = $('login-card');
+      const appCard = $('app-card');
+      const loginMsg = $('admin-login-msg');
+      const crudMsg = $('crud-msg');
+      const tbody = $('students-tbody');
+
+      const tokenKey = 'admin_token';
+      const token = localStorage.getItem(tokenKey);
+      if (token) { loginCard.classList.add('hidden'); appCard.classList.remove('hidden'); refresh(); }
+
+      $('btn-admin-login').addEventListener('click', async () => {
+        loginMsg.textContent = '登录中...';
+        const body = { username: $('admin-username').value.trim(), password: $('admin-password').value };
+        try {
+          const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '登录失败');
+          localStorage.setItem(tokenKey, data.token);
+          loginMsg.textContent = '登录成功'; loginMsg.className = 'success';
+          loginCard.classList.add('hidden'); appCard.classList.remove('hidden');
+          refresh();
+        } catch (e) {
+          loginMsg.textContent = e.message; loginMsg.className = 'error';
+        }
+      });
+
+      $('btn-refresh').addEventListener('click', refresh);
+      $('btn-search').addEventListener('click', refresh);
+
+      async function refresh() {
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">加载中...</td></tr>';
+        const q = $('search-q').value.trim();
+        try {
+          const res = await fetch('/api/students' + (q ? ('?q=' + encodeURIComponent(q)) : ''), { headers: { 'Authorization': 'Bearer ' + localStorage.getItem(tokenKey) } });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '加载失败');
+          tbody.innerHTML = '';
+          data.students.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${s.student_id}</td>
+              <td>${s.name || ''}</td>
+              <td>${s.gender || ''}</td>
+              <td>${s.age ?? ''}</td>
+              <td>${s.class || ''}</td>
+              <td>${s.major || ''}</td>
+              <td>
+                <button class="secondary" data-edit="${s.student_id}">编辑</button>
+                <button class="danger" data-del="${s.student_id}">删除</button>
+              </td>`;
+            tbody.appendChild(tr);
+          });
+          tbody.querySelectorAll('button[data-edit]').forEach(btn => btn.addEventListener('click', () => fillForm(btn.dataset.edit)) );
+          tbody.querySelectorAll('button[data-del]').forEach(btn => btn.addEventListener('click', () => delStudent(btn.dataset.del)) );
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="7" class="error">${e.message}</td></tr>`;
+        }
+      }
+
+      async function fillForm(student_id) {
+        const q = encodeURIComponent(student_id);
+        const res = await fetch('/api/students?q=' + q, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem(tokenKey) } });
+        const data = await res.json();
+        const s = (data.students || []).find(x => x.student_id === student_id);
+        if (!s) return;
+        $('f-student_id').value = s.student_id;
+        $('f-name').value = s.name || '';
+        $('f-gender').value = s.gender || '';
+        $('f-age').value = s.age ?? '';
+        $('f-class').value = s.class || '';
+        $('f-major').value = s.major || '';
+        $('f-password').value = '';
+      }
+
+      $('btn-create').addEventListener('click', async () => {
+        crudMsg.textContent = '新增中...';
+        const body = collectForm();
+        try {
+          const res = await fetch('/api/students', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem(tokenKey) }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '新增失败');
+          crudMsg.textContent = '新增成功'; crudMsg.className = 'success';
+          refresh(); clearForm();
+        } catch (e) { crudMsg.textContent = e.message; crudMsg.className = 'error'; }
+      });
+
+      $('btn-update').addEventListener('click', async () => {
+        crudMsg.textContent = '更新中...';
+        const body = collectForm();
+        try {
+          const res = await fetch('/api/students', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem(tokenKey) }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '更新失败');
+          crudMsg.textContent = '更新成功'; crudMsg.className = 'success';
+          refresh(); clearForm();
+        } catch (e) { crudMsg.textContent = e.message; crudMsg.className = 'error'; }
+      });
+
+      async function delStudent(student_id) {
+        if (!confirm('确认删除该学生吗？')) return;
+        crudMsg.textContent = '删除中...';
+        try {
+          const res = await fetch('/api/students', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem(tokenKey) }, body: JSON.stringify({ student_id }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '删除失败');
+          crudMsg.textContent = '删除成功'; crudMsg.className = 'success';
+          refresh();
+        } catch (e) { crudMsg.textContent = e.message; crudMsg.className = 'error'; }
+      }
+
+      function collectForm() {
+        return {
+          student_id: $('f-student_id').value.trim(),
+          name: $('f-name').value.trim(),
+          gender: $('f-gender').value,
+          age: $('f-age').value ? Number($('f-age').value) : null,
+          class: $('f-class').value.trim(),
+          major: $('f-major').value.trim(),
+          password: $('f-password').value
+        };
+      }
+      function clearForm() {
+        ['f-student_id','f-name','f-gender','f-age','f-class','f-major','f-password'].forEach(id => { const el = $(id); if (el.tagName === 'SELECT') el.value = ''; else el.value=''; });
+      }
+    </script>
+  </body>
+</html>

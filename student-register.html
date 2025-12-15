@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>学生注册</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>学生注册</h1>
+        <a href="./index.html"><button class="secondary">返回首页</button></a>
+      </header>
+
+      <section class="card">
+        <div class="grid">
+          <div>
+            <label>学号</label>
+            <input id="f-student_id" />
+          </div>
+          <div>
+            <label>姓名</label>
+            <input id="f-name" />
+          </div>
+          <div>
+            <label>性别</label>
+            <select id="f-gender">
+              <option value="">未选择</option>
+              <option>男</option>
+              <option>女</option>
+            </select>
+          </div>
+          <div>
+            <label>年龄</label>
+            <input id="f-age" type="number" />
+          </div>
+          <div>
+            <label>班级</label>
+            <input id="f-class" />
+          </div>
+          <div>
+            <label>专业</label>
+            <input id="f-major" />
+          </div>
+          <div>
+            <label>密码</label>
+            <input id="f-password" type="password" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="btn-register">注册</button>
+          <span id="reg-msg" class="muted"></span>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      $('btn-register').addEventListener('click', async () => {
+        $('reg-msg').textContent = '注册中...';
+        const body = {
+          student_id: $('f-student_id').value.trim(),
+          name: $('f-name').value.trim(),
+          gender: $('f-gender').value,
+          age: $('f-age').value ? Number($('f-age').value) : null,
+          class: $('f-class').value.trim(),
+          major: $('f-major').value.trim(),
+          password: $('f-password').value
+        };
+        try {
+          const res = await fetch('/api/student/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '注册失败');
+          $('reg-msg').textContent = '注册成功，请前往登录'; $('reg-msg').className = 'success';
+        } catch (e) {
+          $('reg-msg').textContent = e.message; $('reg-msg').className = 'error';
+        }
+      });
+    </script>
+  </body>
+</html>
