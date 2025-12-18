@@ -5,7 +5,7 @@
   "description": "学生信息管理系统（Vercel + Neon）",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=18"
+    "node": "18.x"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

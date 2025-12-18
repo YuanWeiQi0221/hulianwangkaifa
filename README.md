@@ -30,5 +30,5 @@
 ## 部署到 Vercel
 
 - 在 Vercel 项目环境变量中配置 `DATABASE_URL`（Neon 的连接字符串）。
+- 建议额外配置 `AUTH_SECRET`（任意长随机字符串，用于签发登录 Cookie）。
 - 部署后访问首页即可使用；如需触发初始化，打开 `/api/health`。
-
