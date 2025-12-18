@@ -1,15 +1,19 @@
 {
-  "name": "student-management-web",
-  "version": "1.0.0",
+  "name": "student-info-management",
   "private": true,
-  "description": "学生信息管理系统（HTML/CSS/JS + Vercel Serverless + Neon）",
-  "scripts": {
-    "dev": "npx serve -p 5173"
+  "version": "1.0.0",
+  "description": "学生信息管理系统（Vercel + Neon）",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.5",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.3",
-    "serve": "^14.2.5"
+    "pg": "^8.13.1"
+  },
+  "scripts": {
+    "dev": "npx vercel dev",
+    "build": "node -e \"console.log('no build step')\""
   }
 }
+
