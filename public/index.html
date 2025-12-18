@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>学生信息管理系统</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container topbar__inner">
+        <div class="brand">
+          <div class="brand__logo">SIMS</div>
+          <div class="brand__text">
+            <div class="brand__title">学生信息管理系统</div>
+            <div class="brand__sub">Vercel · Neon</div>
+          </div>
+        </div>
+        <div class="topbar__actions">
+          <a class="link" href="#/auth" id="navAuth">登录/注册</a>
+          <a class="link" href="#/student" id="navStudent">学生</a>
+          <a class="link" href="#/admin" id="navAdmin">管理员</a>
+          <button class="btn btn--ghost" id="btnLogout" type="button">退出</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container main">
+      <section class="card" id="viewAuth">
+        <div class="card__header">
+          <h1 class="h1">欢迎使用</h1>
+          <p class="muted">请选择管理员登录，或学生登录/注册后进入系统。</p>
+        </div>
+
+        <div class="tabs">
+          <button class="tab tab--active" data-tab="adminLogin" type="button">管理员登录</button>
+          <button class="tab" data-tab="studentLogin" type="button">学生登录</button>
+          <button class="tab" data-tab="studentRegister" type="button">学生注册</button>
+        </div>
+
+        <div class="grid2">
+          <div class="panel" data-panel="adminLogin">
+            <form class="form" id="formAdminLogin">
+              <div class="form__row">
+                <label class="label" for="adminUsername">用户名</label>
+                <input class="input" id="adminUsername" name="username" autocomplete="username" placeholder="admin" />
+              </div>
+              <div class="form__row">
+                <label class="label" for="adminPassword">密码</label>
+                <input class="input" id="adminPassword" name="password" type="password" autocomplete="current-password" placeholder="admin" />
+              </div>
+              <button class="btn btn--primary" type="submit">登录</button>
+              <div class="hint">默认管理员：用户名 `admin`，密码 `admin`</div>
+            </form>
+          </div>
+
+          <div class="panel hidden" data-panel="studentLogin">
+            <form class="form" id="formStudentLogin">
+              <div class="form__row">
+                <label class="label" for="studentNoLogin">学号</label>
+                <input class="input" id="studentNoLogin" name="studentNo" autocomplete="username" placeholder="例如：20250001" />
+              </div>
+              <div class="form__row">
+                <label class="label" for="studentPasswordLogin">密码</label>
+                <input class="input" id="studentPasswordLogin" name="password" type="password" autocomplete="current-password" placeholder="默认：123456（示例数据）" />
+              </div>
+              <button class="btn btn--primary" type="submit">登录</button>
+              <div class="hint">示例学生密码为 `123456`（初始化数据）。</div>
+            </form>
+          </div>
+
+          <div class="panel hidden" data-panel="studentRegister">
+            <form class="form" id="formStudentRegister">
+              <div class="grid2 grid2--tight">
+                <div class="form__row">
+                  <label class="label" for="studentNoReg">学号</label>
+                  <input class="input" id="studentNoReg" name="studentNo" placeholder="例如：20251234" />
+                </div>
+                <div class="form__row">
+                  <label class="label" for="nameReg">姓名</label>
+                  <input class="input" id="nameReg" name="name" placeholder="例如：赵六" />
+                </div>
+              </div>
+
+              <div class="grid2 grid2--tight">
+                <div class="form__row">
+                  <label class="label" for="genderReg">性别</label>
+                  <select class="input" id="genderReg" name="gender">
+                    <option value="">不填写</option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                  </select>
+                </div>
+                <div class="form__row">
+                  <label class="label" for="ageReg">年龄</label>
+                  <input class="input" id="ageReg" name="age" type="number" min="1" max="120" placeholder="例如：20" />
+                </div>
+              </div>
+
+              <div class="grid2 grid2--tight">
+                <div class="form__row">
+                  <label class="label" for="classNameReg">班级</label>
+                  <input class="input" id="classNameReg" name="className" placeholder="例如：计科1班" />
+                </div>
+                <div class="form__row">
+                  <label class="label" for="majorReg">专业</label>
+                  <input class="input" id="majorReg" name="major" placeholder="例如：软件工程" />
+                </div>
+              </div>
+
+              <div class="form__row">
+                <label class="label" for="pwdReg">密码</label>
+                <input class="input" id="pwdReg" name="password" type="password" autocomplete="new-password" placeholder="请设置登录密码" />
+              </div>
+
+              <button class="btn btn--primary" type="submit">注册并登录</button>
+              <div class="hint">注册后可在“学生”页面查看个人信息。</div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="viewAdmin">
+        <div class="card__header card__header--row">
+          <div>
+            <h1 class="h1">学生信息管理</h1>
+            <p class="muted" id="adminWelcome">管理员</p>
+          </div>
+          <div class="row">
+            <button class="btn btn--primary" type="button" id="btnAddStudent">新增学生</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar__left">
+            <input class="input" id="searchInput" placeholder="搜索：学号 / 姓名 / 班级 / 专业" />
+          </div>
+          <div class="toolbar__right">
+            <button class="btn btn--ghost" type="button" id="btnSearch">查询</button>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table class="table" id="studentsTable">
+            <thead>
+              <tr>
+                <th>学号</th>
+                <th>姓名</th>
+                <th class="th--hideSm">性别</th>
+                <th class="th--hideSm">年龄</th>
+                <th>班级</th>
+                <th class="th--hideSm">专业</th>
+                <th class="th--actions">操作</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTbody"></tbody>
+          </table>
+          <div class="empty hidden" id="studentsEmpty">暂无数据</div>
+        </div>
+
+        <div class="pager">
+          <div class="pager__meta" id="pagerMeta"></div>
+          <div class="pager__actions">
+            <button class="btn btn--ghost" type="button" id="btnPrev">上一页</button>
+            <button class="btn btn--ghost" type="button" id="btnNext">下一页</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="viewStudent">
+        <div class="card__header">
+          <h1 class="h1">我的信息</h1>
+          <p class="muted">如需修改信息，请联系管理员。</p>
+        </div>
+
+        <div class="kv" id="studentInfo"></div>
+      </section>
+    </main>
+
+    <div class="toast hidden" id="toast"></div>
+
+    <div class="modal hidden" id="studentModal">
+      <div class="modal__panel">
+        <div class="modal__header">
+          <div class="modal__title" id="modalTitle">新增学生</div>
+          <button class="iconBtn" id="btnCloseModal" type="button" aria-label="关闭">×</button>
+        </div>
+        <form class="form" id="formStudentEdit">
+          <input type="hidden" name="id" id="editId" />
+          <div class="grid2 grid2--tight">
+            <div class="form__row">
+              <label class="label" for="editStudentNo">学号</label>
+              <input class="input" id="editStudentNo" name="studentNo" />
+            </div>
+            <div class="form__row">
+              <label class="label" for="editName">姓名</label>
+              <input class="input" id="editName" name="name" />
+            </div>
+          </div>
+
+          <div class="grid2 grid2--tight">
+            <div class="form__row">
+              <label class="label" for="editGender">性别</label>
+              <select class="input" id="editGender" name="gender">
+                <option value="">不填写</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+            <div class="form__row">
+              <label class="label" for="editAge">年龄</label>
+              <input class="input" id="editAge" name="age" type="number" min="1" max="120" />
+            </div>
+          </div>
+
+          <div class="grid2 grid2--tight">
+            <div class="form__row">
+              <label class="label" for="editClassName">班级</label>
+              <input class="input" id="editClassName" name="className" />
+            </div>
+            <div class="form__row">
+              <label class="label" for="editMajor">专业</label>
+              <input class="input" id="editMajor" name="major" />
+            </div>
+          </div>
+
+          <div class="grid2 grid2--tight">
+            <div class="form__row">
+              <label class="label" for="editPhone">电话</label>
+              <input class="input" id="editPhone" name="phone" />
+            </div>
+            <div class="form__row">
+              <label class="label" for="editEmail">邮箱</label>
+              <input class="input" id="editEmail" name="email" type="email" />
+            </div>
+          </div>
+
+          <div class="form__row">
+            <label class="label" for="editAddress">地址</label>
+            <input class="input" id="editAddress" name="address" />
+          </div>
+
+          <div class="form__row">
+            <label class="label" for="editPassword">重置密码</label>
+            <input class="input" id="editPassword" name="password" type="password" placeholder="不修改请留空；新增默认123456" />
+          </div>
+
+          <div class="row row--end">
+            <button class="btn btn--ghost" id="btnCancelModal" type="button">取消</button>
+            <button class="btn btn--primary" type="submit" id="btnSaveStudent">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
