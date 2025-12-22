@@ -234,11 +234,11 @@ async function loadStudents() {
 
 async function handleSaveStudent(formEl) {
   if (state.ui.saving) return;
+  const fd = new FormData(formEl);
+  const payload = Object.fromEntries(fd.entries());
   state.ui.saving = true;
   setButtonsDisabled(true);
   try {
-    const fd = new FormData(formEl);
-    const payload = Object.fromEntries(fd.entries());
     const isEdit = !!payload.id;
     const body = {
       id: payload.id || undefined,
@@ -451,4 +451,3 @@ async function init() {
 }
 
 init().catch(() => showToast("初始化失败，请刷新页面重试"));
-
